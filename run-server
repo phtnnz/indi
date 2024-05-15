@@ -1,0 +1,4 @@
+#!/bin/sh
+
+#indiserver -v indi_qhy_ccd indi_simulator_telescope indi_simulator_ccd
+indiserver -v indi_qhy_ccd 

@@ -1,0 +1,5 @@
+*.fit*
+*.jpg
+*.png
+*~
+__pycache__/
