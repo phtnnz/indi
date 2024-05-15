@@ -1,8 +1,33 @@
 # INDI Python Utils
 
+Python scripts for image capture with INDI, currently tailored for a QHY 5L II mono
+
+Copyright 2024 Martin Junius
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+
+
+## References
+
+Based on the following code examples for PyIndi:
+
+https://github.com/indilib/pyindi-client/tree/master/examples \
+https://github.com/jkoenig72/indiCapture
+
+
 ## Installation
 
-On Linux Ubuntu 22.04 LTS
+On Linux Ubuntu (Server) 22.04 LTS
 
 The following system-wide packages must be installed, including support for QHY cameras
 
