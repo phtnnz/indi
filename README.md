@@ -57,7 +57,7 @@ Bus 008 Device 010: ID 1618:0921 QHY-CCD   QHY5-II
 
 ## Capturing frames with INDI camera (aka ccd)
 
-### qhy5-capture.py
+### qhy5-capture
 
 ```
 usage: qhy5-capture [-h] [-v] [-d] [-c CAMERA] [-g GAIN] [-o OFFSET] [-b BINNING] [-e EXPOSURE]
@@ -77,5 +77,36 @@ options:
                         camera binning, 1 (1x1) or 2 (2x2)
   -e EXPOSURE, --exposure EXPOSURE
                         camera exposure time/s
+
+Version 0.1 / 2024-05-14 / Martin Junius
+```
+
+(writes image to hardcoded blob.jpg)
+
+
+### qhy5-auto
+
+Capture image with auto-exposure
+
+```
+usage: qhy5-auto [-h] [-v] [-d] [-c CAMERA] [-g GAIN] [-o OFFSET] [-b BINNING] [-e EXPOSURE]
+
+INDI client, capture frames from QHY5L with auto-exposure
+
+options:
+  -h, --help            show this help message and exit
+  -v, --verbose         verbose messages
+  -d, --debug           more debug messages
+  -c CAMERA, --camera CAMERA
+                        camera name (default QHY CCD QHY5LII-M-6077d)
+  -g GAIN, --gain GAIN  initial camera gain (default: 1)
+  -o OFFSET, --offset OFFSET
+                        initial camera offset (default: 1)
+  -b BINNING, --binning BINNING
+                        initial camera binning, 1 (1x1) or 2 (2x2) (default: 2)
+  -e EXPOSURE, --exposure EXPOSURE
+                        initial camera exposure time/s (default: 0.1)
+
+Version 0.1 / 2024-05-14 / Martin Junius
 ```
 
