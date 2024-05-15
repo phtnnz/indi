@@ -48,22 +48,28 @@ TIMEOUT = 0.1
 HOST    = "localhost"
 PORT    = 7624
 # Max numbers of auto-exposure attempts
-MAXTRY  = 10
+MAXTRY  = 15
 # Expected mean ADU (0..255) and deviation
 MEANADU = 128
 DEVADU  = 20
+EXPOSURE_THRESHOLD = 1.0 # s
 
 
-# QHY 5L ii mono:
+# QHY 5L II mono:
 #   gain 1 ... 29
 #   offset 1 ... 512; +100 -> ~+25 ADU min value
+MINGAIN   = 1
+MAXGAIN   = 29
+STEPGAIN  = 4
+MINOFFSET = 1
+MAXOFFSET = 512
 
 # Command line options
 class Options:
     camera   = "QHY CCD QHY5LII-M-6077d"    # -c --camera
-    gain     = 1                            # -g --gain         1 ... 29
-    offset   = 1                            # -o --offset       1 ... 512
-    exposure = 0.1                          # -e --exposure
+    gain     = MINGAIN                      # -g --gain         1 ... 29
+    offset   = MINOFFSET                    # -o --offset       1 ... 512
+    exposure = 0.5                          # -e --exposure
     binning  = 2                            # -b --binning
 
 
@@ -124,7 +130,7 @@ class IndiClient(PyIndi.BaseClient):
         # verbose(f"update property {prop.getName()} as {prop.getTypeAsString()} for device {prop.getDeviceName()}")
         global blobEvent
         if prop.getType() == PyIndi.INDI_BLOB:
-            print("new BLOB ", prop.getName())
+            ic(prop.getName())
             blobEvent.set()
 
 
@@ -193,7 +199,7 @@ class IndiClient(PyIndi.BaseClient):
         self.ccd_exposure[0].setValue(self.current_exposure)
         self.sendNewProperty(self.ccd_exposure)
 
-        self.verboseCCDAttr()
+        # self.verboseCCDAttr()
 
 
     def CCDgetImg(self):
@@ -213,7 +219,7 @@ class IndiClient(PyIndi.BaseClient):
                 blob.getFormat(),
             )
             fitsdata = blob.getblobdata()
-            print("fits data type: ", type(fitsdata))
+            # print("fits data type: ", type(fitsdata))
 
             # Directly convert bytearray to FITS
             hdul = fits.HDUList.fromstring(bytes(fitsdata))
@@ -240,10 +246,15 @@ class IndiClient(PyIndi.BaseClient):
         low   = MEANADU - DEVADU
         high  = MEANADU + DEVADU
         img   = None
+        last_exp_inc = False
+        last_exp_dec = False
+        last_gain_inc = False
+        last_gain_dec = False
 
         while count > 0:
+            ic("--- ITERATION ---")
+            ic(count, self.current_gain, self.current_offset, self.current_exposure)
             count -= 1
-            ic(self.current_gain, self.current_offset, self.current_exposure)
             self.CCDcapture()
             img = self.CCDgetImg()
             mean = np.average(img)
@@ -251,17 +262,34 @@ class IndiClient(PyIndi.BaseClient):
             ic(low, high, mean, min)
             if mean >= high:
                 # exposure too bright
-                if self.current_gain > 1:
-                    self.current_gain = 1
+                if self.current_exposure <= EXPOSURE_THRESHOLD and self.current_gain > MINGAIN and not last_gain_inc:
+                    self.current_gain -= STEPGAIN
+                    if self.current_gain < MINGAIN: self.current_gain = MINGAIN
+                    last_gain_dec = True
                 else:
-                    self.current_exposure /= 2
+                    self.current_exposure /= 1.4 if last_exp_inc else 2
+                    last_exp_dec = True
+                    last_gain_dec = False
+                ic("too bright, new exposure:")
+                ic(self.current_exposure, self.current_gain)
             elif mean <= low:
                 # exposure too dark
-                pass
+                if self.current_exposure >= EXPOSURE_THRESHOLD and self.current_gain < MAXGAIN and not last_gain_dec:
+                    self.current_gain += STEPGAIN
+                    if self.current_gain > MAXGAIN: self.current_gain = MAXGAIN
+                    last_gain_inc = True
+                else:
+                    self.current_exposure *= 1.4 if last_exp_dec else 2
+                    last_gain_inc = False
+                    last_exp_inc  = True
+                ic("too dark, new exposure:")
+                ic(self.current_exposure, self.current_gain)
             else:
                 # exposure ok
+                ic("ok, saving image")
                 break
 
+        verbose(f"auto-exposure {self.current_exposure:.3f}s gain={self.current_gain} mean={mean:.0f}")
         self.CCDwriteImg(img)
 
 
