@@ -47,14 +47,22 @@ TIMEOUT = 0.1
 # Default server:port
 HOST    = "localhost"
 PORT    = 7624
+# Max numbers of auto-exposure attempts
+MAXTRY  = 10
+# Expected mean ADU (0..255) and deviation
+MEANADU = 128
+DEVADU  = 20
 
 
+# QHY 5L ii mono:
+#   gain 1 ... 29
+#   offset 1 ... 512; +100 -> ~+25 ADU min value
 
 # Command line options
 class Options:
     camera   = "QHY CCD QHY5LII-M-6077d"    # -c --camera
-    gain     = 1                            # -g --gain
-    offset   = 0                            # -o --offset
+    gain     = 1                            # -g --gain         1 ... 29
+    offset   = 1                            # -o --offset       1 ... 512
     exposure = 0.1                          # -e --exposure
     binning  = 2                            # -b --binning
 
@@ -80,9 +88,9 @@ class IndiClient(PyIndi.BaseClient):
 
     def newProperty(self, p):
         """Emmited when a new property is created for an INDI driver."""
-        verbose(
-            f"new property {p.getName()} as {p.getTypeAsString()} for device {p.getDeviceName()}"
-        )
+        # verbose(
+        #     f"new property {p.getName()} as {p.getTypeAsString()} for device {p.getDeviceName()}"
+        # )
 
     # def updateProperty(self, p):
     #     """Emmited when a new property value arrives from INDI server."""
@@ -92,9 +100,9 @@ class IndiClient(PyIndi.BaseClient):
 
     def removeProperty(self, p):
         """Emmited when a property is deleted for an INDI driver."""
-        verbose(
-            f"remove property {p.getName()} as {p.getTypeAsString()} for device {p.getDeviceName()}"
-        )
+        # verbose(
+        #     f"remove property {p.getName()} as {p.getTypeAsString()} for device {p.getDeviceName()}"
+        # )
 
     def newMessage(self, d, m):
         """Emmited when a new message arrives from INDI server."""
@@ -113,7 +121,7 @@ class IndiClient(PyIndi.BaseClient):
 
     def updateProperty(self, prop):
         """Emmited when a new property value arrives from INDI server."""
-        verbose(f"update property {prop.getName()} as {prop.getTypeAsString()} for device {prop.getDeviceName()}")
+        # verbose(f"update property {prop.getName()} as {prop.getTypeAsString()} for device {prop.getDeviceName()}")
         global blobEvent
         if prop.getType() == PyIndi.INDI_BLOB:
             print("new BLOB ", prop.getName())
@@ -135,7 +143,7 @@ class IndiClient(PyIndi.BaseClient):
         return attr
             
 
-    def CCDconnect(self, ccd=Options.camera):
+    def CCDconnect(self, ccd):
         # Connect camera
         while not (device_ccd := self.getDevice(ccd)):
             time.sleep(TIMEOUT)
@@ -153,6 +161,11 @@ class IndiClient(PyIndi.BaseClient):
         self.ccd_offset   = self.getCCDAttr("CCD_OFFSET")
         self.ccd_info     = self.getCCDAttr("CCD_INFO")
 
+        self.current_binning  = Options.binning
+        self.current_gain     = Options.gain 
+        self.current_offset   = Options.offset 
+        self.current_exposure = Options.exposure 
+
         # inform the indi server that we want to receive the "CCD1" blob from this device
         self.setBLOBMode(PyIndi.B_ALSO, ccd, "CCD1")
         while not (ccd_ccd1 := device_ccd.getBLOB("CCD1")):
@@ -162,32 +175,29 @@ class IndiClient(PyIndi.BaseClient):
         # we use here the threading.Event facility of Python
         global blobEvent
         blobEvent = threading.Event()
-        blobEvent.clear()
 
 
-    def CCDcapture(self, gain, offset, bin, exp):
-        # QHY 5L ii mono:
-        #   gain 1 ... 29
-        #   offset 0 ... n*100; +100 -> ~+25 ADU min value
+    def CCDcapture(self):
 
         # set gain and offset
-        self.ccd_gain[0].setValue(gain)
+        self.ccd_gain[0].setValue(self.current_gain)
         self.sendNewProperty(self.ccd_gain)
-        self.ccd_offset[0].setValue(offset)
+        self.ccd_offset[0].setValue(self.current_offset)
         self.sendNewProperty(self.ccd_offset)
         # set binning
-        self.ccd_binning[0].setValue(bin)
-        self.ccd_binning[1].setValue(bin)
+        self.ccd_binning[0].setValue(self.current_binning)
+        self.ccd_binning[1].setValue(self.current_binning)
         self.sendNewProperty(self.ccd_binning)
 
         # start exposure
-        self.ccd_exposure[0].setValue(exp)
+        blobEvent.clear()
+        self.ccd_exposure[0].setValue(self.current_exposure)
         self.sendNewProperty(self.ccd_exposure)
 
         self.verboseCCDAttr()
 
 
-    def CCDprocessData(self):
+    def CCDgetImg(self):
         # wait for exposure(s)
         blobEvent.wait()
         # seems to help with early terminate errors
@@ -208,16 +218,52 @@ class IndiClient(PyIndi.BaseClient):
 
             # Directly convert bytearray to FITS
             hdul = fits.HDUList.fromstring(bytes(fitsdata))
-            hdul.info()
+            # hdul.info()
             imgdata = hdul[0].data
 
-            # Evaluate data
-            mean = np.average(imgdata)
-            min  = np.min(imgdata)
-            max  = np.max(imgdata)
-            print(imgdata)
-            print(mean, min, max)
-            cv2.imwrite("blob.jpg", imgdata)
+            return imgdata
+    
+
+    def CCDsaveImg(self):
+        img = self.CCDgetImg()
+        self.CCDwriteImg(img)
+
+
+    def CCDwriteImg(self, img):
+        # Normalize to 0 .. 255
+        img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+        # FIXME: file name handling
+        cv2.imwrite("blob.jpg", img)
+
+
+    def CCDauto(self):
+        count = MAXTRY
+        low   = MEANADU - DEVADU
+        high  = MEANADU + DEVADU
+        img   = None
+
+        while count > 0:
+            count -= 1
+            ic(self.current_gain, self.current_offset, self.current_exposure)
+            self.CCDcapture()
+            img = self.CCDgetImg()
+            mean = np.average(img)
+            min  = np.min(img)
+            ic(low, high, mean, min)
+            if mean >= high:
+                # exposure too bright
+                if self.current_gain > 1:
+                    self.current_gain = 1
+                else:
+                    self.current_exposure /= 2
+            elif mean <= low:
+                # exposure too dark
+                pass
+            else:
+                # exposure ok
+                break
+
+        self.CCDwriteImg(img)
 
 
     def _verbose_list(name, list):
@@ -241,11 +287,11 @@ def main():
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
-    arg.add_argument("-c", "--camera", help="camera name")
-    arg.add_argument("-g", "--gain", type=int, help="camera gain")
-    arg.add_argument("-o", "--offset", type=int, help="camera offset")
-    arg.add_argument("-b", "--binning", type=int, help="camera binning, 1 (1x1) or 2 (2x2)")
-    arg.add_argument("-e", "--exposure", type=float, help="camera exposure time/s")
+    arg.add_argument("-c", "--camera", help=f"camera name (default {Options.camera})")
+    arg.add_argument("-g", "--gain", type=int, help=f"initial camera gain (default: {Options.gain})")
+    arg.add_argument("-o", "--offset", type=int, help=f"initial camera offset (default: {Options.offset})")
+    arg.add_argument("-b", "--binning", type=int, help=f"initial camera binning, 1 (1x1) or 2 (2x2) (default: {Options.binning})")
+    arg.add_argument("-e", "--exposure", type=float, help=f"initial camera exposure time/s (default: {Options.exposure})")
 
     args = arg.parse_args()
 
@@ -279,10 +325,10 @@ def main():
     # indi.verboseDevices()
 
     # Connect camera
-    indi.CCDconnect()
-    # indi.verboseCCDAttr()
-    indi.CCDcapture(Options.gain, Options.offset, Options.binning, Options.exposure)
-    indi.CCDprocessData()
+    indi.CCDconnect(Options.camera)
+    # indi.CCDcapture()
+    # indi.CCDsaveImg()
+    indi.CCDauto()
 
     # Disconnect from the indiserver
     indi.disconnectServer()
