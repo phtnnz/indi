@@ -178,7 +178,6 @@ class IndiClient(PyIndi.BaseClient):
 
 
     def CCDcapture(self):
-
         # set gain and offset
         self.ccd_gain[0].setValue(self.current_gain)
         self.sendNewProperty(self.ccd_gain)

@@ -50,11 +50,15 @@ PORT    = 7624
 
 
 
+# QHY 5L ii mono:
+#   gain 1 ... 29
+#   offset 1 ... 512; +100 -> ~+25 ADU min value
+
 # Command line options
 class Options:
     camera   = "QHY CCD QHY5LII-M-6077d"    # -c --camera
-    gain     = 1                            # -g --gain
-    offset   = 0                            # -o --offset
+    gain     = 1                            # -g --gain         1 ... 29
+    offset   = 1                            # -o --offset       1 ... 512
     exposure = 0.1                          # -e --exposure
     binning  = 2                            # -b --binning
 
@@ -135,7 +139,7 @@ class IndiClient(PyIndi.BaseClient):
         return attr
             
 
-    def CCDconnect(self, ccd=Options.camera):
+    def CCDconnect(self, ccd):
         # Connect camera
         while not (device_ccd := self.getDevice(ccd)):
             time.sleep(TIMEOUT)
@@ -162,14 +166,9 @@ class IndiClient(PyIndi.BaseClient):
         # we use here the threading.Event facility of Python
         global blobEvent
         blobEvent = threading.Event()
-        blobEvent.clear()
 
 
     def CCDcapture(self, gain, offset, bin, exp):
-        # QHY 5L ii mono:
-        #   gain 1 ... 29
-        #   offset 0 ... n*100; +100 -> ~+25 ADU min value
-
         # set gain and offset
         self.ccd_gain[0].setValue(gain)
         self.sendNewProperty(self.ccd_gain)
@@ -181,6 +180,7 @@ class IndiClient(PyIndi.BaseClient):
         self.sendNewProperty(self.ccd_binning)
 
         # start exposure
+        blobEvent.clear()
         self.ccd_exposure[0].setValue(exp)
         self.sendNewProperty(self.ccd_exposure)
 
@@ -279,7 +279,7 @@ def main():
     # indi.verboseDevices()
 
     # Connect camera
-    indi.CCDconnect()
+    indi.CCDconnect(Options.camera)
     # indi.verboseCCDAttr()
     indi.CCDcapture(Options.gain, Options.offset, Options.binning, Options.exposure)
     indi.CCDprocessData()
