@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/env python3
 
 # for logging
 import sys
@@ -62,9 +62,7 @@ logging.basicConfig(format="%(asctime)s %(message)s", level=logging.INFO)
 
 # Create an instance of the IndiClient class and initialize its host/port members
 indiClient = IndiClient()
-#indiClient.setServer("localhost", 7624)
-#indiClient.setServer("edoras.mjsb.net", 7624)
-indiClient.setServer("192.168.254.202", 7624)
+indiClient.setServer("localhost", 7624)
 
 # Connect to server
 print("Connecting and waiting 1 sec")
