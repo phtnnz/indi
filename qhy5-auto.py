@@ -17,6 +17,8 @@
 # ChangeLog
 # Version 0.1 / 2024-05-14
 #       First version based on qhy5-capture
+# Versopm 0.2 / 2024-05-15
+#       Auto-exposure implemented
 
 # Standard library
 import sys
@@ -37,7 +39,7 @@ ic.disable()
 from verbose import verbose, warning, error
 
 
-VERSION = "0.1 / 2024-05-14"
+VERSION = "0.2 / 2024-05-15"
 AUTHOR  = "Martin Junius"
 NAME    = "qhy5-auto"
 DESC    = "INDI client, capture frames from QHY5L with auto-exposure"
