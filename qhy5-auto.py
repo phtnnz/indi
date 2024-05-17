@@ -368,13 +368,19 @@ def main():
     if args.loop:
         loop = args.loop
         verbose(f"looping exposure every {loop} s ... Crtl-C to interrupt")
-        while True:
-            t1 = time.perf_counter()
-            indi.CCDauto()
-            t2 = time.perf_counter()
-            sleep = loop - (t2 - t1)
-            if(sleep > 0):
-                time.sleep(sleep)
+        try:
+            # looping exposure
+            while True:
+                t1 = time.perf_counter()
+                indi.CCDauto()
+                t2 = time.perf_counter()
+                sleep = loop - (t2 - t1)
+                if(sleep > 0):
+                    time.sleep(sleep)
+        except KeyboardInterrupt:
+            # Catch Ctrl-C
+            verbose("looping interrupted, terminating")
+            pass
     else:
         indi.CCDauto()
 
