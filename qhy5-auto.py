@@ -17,8 +17,10 @@
 # ChangeLog
 # Version 0.1 / 2024-05-14
 #       First version based on qhy5-capture
-# Versopm 0.2 / 2024-05-15
+# Version 0.2 / 2024-05-15
 #       Auto-exposure implemented
+# Version 0.3 / 2024-05-17
+#       Added loop option
 
 # Standard library
 import sys
@@ -204,6 +206,10 @@ class IndiClient(PyIndi.BaseClient):
         # self.verboseCCDAttr()
 
 
+    def lastExposureTime(self):
+        return self.current_exposure
+
+
     def CCDgetImg(self):
         # wait for exposure(s)
         blobEvent.wait()
@@ -321,6 +327,7 @@ def main():
     arg.add_argument("-o", "--offset", type=int, help=f"initial camera offset (default: {Options.offset})")
     arg.add_argument("-b", "--binning", type=int, help=f"initial camera binning, 1 (1x1) or 2 (2x2) (default: {Options.binning})")
     arg.add_argument("-e", "--exposure", type=float, help=f"initial camera exposure time/s (default: {Options.exposure})")
+    arg.add_argument("-l", "--loop", type=float, help=f"loop exposure, interval LOOP s")
 
     args = arg.parse_args()
 
@@ -357,7 +364,19 @@ def main():
     indi.CCDconnect(Options.camera)
     # indi.CCDcapture()
     # indi.CCDsaveImg()
-    indi.CCDauto()
+
+    if args.loop:
+        loop = args.loop
+        verbose(f"looping exposure every {loop} s ... Crtl-C to interrupt")
+        while True:
+            t1 = time.perf_counter()
+            indi.CCDauto()
+            t2 = time.perf_counter()
+            sleep = loop - (t2 - t1)
+            if(sleep > 0):
+                time.sleep(sleep)
+    else:
+        indi.CCDauto()
 
     # Disconnect from the indiserver
     indi.disconnectServer()
