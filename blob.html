@@ -1,0 +1,13 @@
+<!-- Web page for qhy5-auto blog.jpg with auto reload -->
+
+<!doctype html>
+<html lang=en>
+  <head>
+    <meta charset=utf-8 />
+    <title>IAS Remote Webcam Box 2</title>
+  </head>
+  <body>
+    <p>IAS Remote Webcam Box 2</p>
+    <img id="blob" src="blob.jpg" style="" onLoad="setTimeout( () => { document.getElementById('blob').src='blob.jpg' + '?' + new Date().getMilliseconds() } , 2000)" />
+  </body>
+</html>
