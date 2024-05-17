@@ -217,6 +217,12 @@ class IndiClient(PyIndi.BaseClient):
             max  = np.max(imgdata)
             print(imgdata)
             print(mean, min, max)
+
+            # add date
+            font = cv2.FONT_HERSHEY_SIMPLEX
+            # FIXME: position (360, 400) is very camera / binning specific!
+            cv2.putText(imgdata, time.ctime(), (360,460), font, .6, (255), 1, cv2.LINE_AA)
+
             cv2.imwrite("blob.jpg", imgdata)
 
 

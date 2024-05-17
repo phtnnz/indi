@@ -245,6 +245,12 @@ class IndiClient(PyIndi.BaseClient):
     def CCDwriteImg(self, img):
         # Normalize to 0 .. 255
         img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
+
+        # add date
+        font = cv2.FONT_HERSHEY_SIMPLEX
+        # FIXME: position (360, 400) is very camera / binning specific!
+        cv2.putText(img, time.ctime(), (360,460), font, .6, (255), 1, cv2.LINE_AA)
+
         # FIXME: file name handling
         cv2.imwrite("blob.jpg", img)
 
