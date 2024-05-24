@@ -67,6 +67,10 @@ MAXGAIN   = 29
 STEPGAIN  = 4
 MINOFFSET = 1
 MAXOFFSET = 512
+MINEXP    = 0.000001
+MAXEXP    = 10          # camera allow max 3600 s, but would be too long
+
+
 
 # Command line options
 class Options:
@@ -263,11 +267,13 @@ class IndiClient(PyIndi.BaseClient):
         last_exp_dec = False
         last_gain_inc = False
         last_gain_dec = False
+        last_exp = 0
 
         while count > 0:
             ic("--- ITERATION ---")
             ic(count, self.current_gain, self.current_offset, self.current_exposure)
             count -= 1
+            last_exp = self.current_exposure
             self.CCDcapture()
             img = self.CCDgetImg()
             mean = np.average(img)
@@ -283,6 +289,10 @@ class IndiClient(PyIndi.BaseClient):
                     self.current_exposure /= 1.4 if last_exp_inc else 2
                     last_exp_dec = True
                     last_gain_dec = False
+                    if self.current_exposure < MINEXP:
+                        self.current_exposure = MINEXP
+                        ic("set to MINEXP")
+                        break;
                 ic("too bright, new exposure:")
                 ic(self.current_exposure, self.current_gain)
             elif mean <= low:
@@ -295,6 +305,10 @@ class IndiClient(PyIndi.BaseClient):
                     self.current_exposure *= 1.4 if last_exp_dec else 2
                     last_gain_inc = False
                     last_exp_inc  = True
+                    if self.current_exposure > MAXEXP:
+                        self.current_exposure = MAXEXP
+                        ic("set to MAXEXP")
+                        break;
                 ic("too dark, new exposure:")
                 ic(self.current_exposure, self.current_gain)
             else:
@@ -302,7 +316,7 @@ class IndiClient(PyIndi.BaseClient):
                 ic("ok, saving image")
                 break
 
-        verbose(f"auto-exposure {self.current_exposure:.3f}s gain={self.current_gain} mean={mean:.0f}")
+        verbose(f"auto-exposure {last_exp:.3f}s gain={self.current_gain} mean={mean:.0f}")
         self.CCDwriteImg(img)
 
 
