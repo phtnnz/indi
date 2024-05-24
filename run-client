@@ -1,0 +1,3 @@
+#!/bin/sh
+
+./qhy5-auto.py -v -l 10 -O /var/www/html/0c55167f/camera.jpg
