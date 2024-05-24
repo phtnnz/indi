@@ -75,6 +75,7 @@ class Options:
     offset   = MINOFFSET                    # -o --offset       1 ... 512
     exposure = 0.5                          # -e --exposure
     binning  = 2                            # -b --binning
+    output   = "./blob.jpg"                 # -O --output
 
 
 
@@ -250,9 +251,7 @@ class IndiClient(PyIndi.BaseClient):
         font = cv2.FONT_HERSHEY_SIMPLEX
         # FIXME: position (360, 400) is very camera / binning specific!
         cv2.putText(img, time.ctime(), (360,460), font, .6, (255), 1, cv2.LINE_AA)
-
-        # FIXME: file name handling
-        cv2.imwrite("blob.jpg", img)
+        cv2.imwrite(Options.output, img)
 
 
     def CCDauto(self):
@@ -334,6 +333,7 @@ def main():
     arg.add_argument("-b", "--binning", type=int, help=f"initial camera binning, 1 (1x1) or 2 (2x2) (default: {Options.binning})")
     arg.add_argument("-e", "--exposure", type=float, help=f"initial camera exposure time/s (default: {Options.exposure})")
     arg.add_argument("-l", "--loop", type=float, help=f"loop exposure, interval LOOP s")
+    arg.add_argument("-O", "--output", help=f"output JPG file {Options.output})")
 
     args = arg.parse_args()
 
@@ -359,6 +359,8 @@ def main():
         Options.exposure = float(args.exposure)
         if Options.exposure <= 0:
             error("argument -e/--exposure: must be > 0")
+    if args.output:
+        Options.output = args.output
         
     # Connect to the server
     indi = IndiClient("localhost", 7624)
