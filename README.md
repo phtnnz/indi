@@ -89,7 +89,7 @@ Version 0.1 / 2024-05-14 / Martin Junius
 Capture image with auto-exposure
 
 ```
-usage: qhy5-auto [-h] [-v] [-d] [-c CAMERA] [-g GAIN] [-o OFFSET] [-b BINNING] [-e EXPOSURE] [-l LOOP]
+usage: qhy5-auto [-h] [-v] [-d] [-c CAMERA] [-g GAIN] [-o OFFSET] [-b BINNING] [-e EXPOSURE] [-l LOOP] [-O OUTPUT]
 
 INDI client, capture frames from QHY5L with auto-exposure
 
@@ -107,8 +107,10 @@ options:
   -e EXPOSURE, --exposure EXPOSURE
                         initial camera exposure time/s (default: 0.5)
   -l LOOP, --loop LOOP  loop exposure, interval LOOP s
+  -O OUTPUT, --output OUTPUT
+                        output JPG file ./blob.jpg)
 
-Version 0.2 / 2024-05-15 / Martin Junius
+Version 0.4 / 2024-05-24 / Martin Junius
 ```
 
 (writes image to hardcoded blob.jpg)
