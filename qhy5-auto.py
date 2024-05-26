@@ -64,18 +64,20 @@ EXPOSURE_THRESHOLD = 1.0 # s
 # QHY 5L II mono:
 #   gain 1 ... 29
 #   offset 1 ... 512; +100 -> ~+25 ADU min value
+#   exposure 0.000001 ... 3600 s
 MINGAIN   = 1
 MAXGAIN   = 29
 STEPGAIN  = 4
 MINOFFSET = 1
 MAXOFFSET = 512
 MINEXP    = 0.000001
-MAXEXP    = 8          # camera allow max 3600 s, but would be too long
+MAXEXP    = 8          # camera allows max 3600 s, but would be too long ;-)
 
 
 
 # Command line options
 class Options:
+    new_message = False                     # -M --new-message
     camera   = "QHY CCD QHY5LII-M-6077d"    # -c --camera
     gain     = MINGAIN                      # -g --gain         1 ... 29
     offset   = MINOFFSET                    # -o --offset       1 ... 512
@@ -123,7 +125,8 @@ class IndiClient(PyIndi.BaseClient):
 
     def newMessage(self, d, m):
         """Emmited when a new message arrives from INDI server."""
-        verbose(f"new Message {d.messageQueue(m)}")
+        if Options.new_message:
+            verbose(f"new message {d.messageQueue(m)}")
 
     def serverConnected(self):
         """Emmited when the server is connected."""
@@ -225,18 +228,10 @@ class IndiClient(PyIndi.BaseClient):
 
         # process the received one
         for blob in self.ccd_ccd1:
-            verbose(
-                "name: ",
-                blob.getName(),
-                " size: ",
-                blob.getSize(),
-                " format: ",
-                blob.getFormat(),
-            )
-            fitsdata = blob.getblobdata()
-            # print("fits data type: ", type(fitsdata))
-
+            if Options.new_message:
+                verbose(f"name {blob.getName()} size {blob.getSize()} format {blob.getFormat()}")
             # Directly convert bytearray to FITS
+            fitsdata = blob.getblobdata()
             hdul = fits.HDUList.fromstring(bytes(fitsdata))
             # hdul.info()
             imgdata = hdul[0].data
@@ -355,6 +350,7 @@ def main():
         epilog      = "Version " + VERSION + " / " + AUTHOR)
     arg.add_argument("-v", "--verbose", action="store_true", help="verbose messages")
     arg.add_argument("-d", "--debug", action="store_true", help="more debug messages")
+    arg.add_argument("-M", "--new-message", action="store_true", help="verbose log new INDI messages")
     arg.add_argument("-c", "--camera", help=f"camera name (default {Options.camera})")
     arg.add_argument("-g", "--gain", type=int, help=f"initial camera gain (default: {Options.gain})")
     arg.add_argument("-o", "--offset", type=int, help=f"initial camera offset (default: {Options.offset})")
@@ -373,6 +369,8 @@ def main():
         verbose.set_prog(NAME)
         verbose.enable()
     # ... more options ...
+    if args.new_message:
+        Options.new_message = True
     if args.camera:
         Options.camera = args.camera
     if args.gain:
