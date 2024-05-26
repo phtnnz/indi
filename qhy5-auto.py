@@ -70,7 +70,7 @@ STEPGAIN  = 4
 MINOFFSET = 1
 MAXOFFSET = 512
 MINEXP    = 0.000001
-MAXEXP    = 10          # camera allow max 3600 s, but would be too long
+MAXEXP    = 8          # camera allow max 3600 s, but would be too long
 
 
 
@@ -257,7 +257,7 @@ class IndiClient(PyIndi.BaseClient):
         font = cv2.FONT_HERSHEY_SIMPLEX
         # FIXME: position (360, 400) is very camera / binning specific!
         txt_exp = f"{self.current_exposure:.2g}s (G{self.current_gain:d})"
-        cv2.putText(img, time.ctime(), (360,460), font, .6, (255), 1, cv2.LINE_AA)
+        cv2.putText(img, time.ctime(), (360,460), font, .6, (255, 255, 255), 1, cv2.LINE_AA)
         cv2.putText(img, txt_exp, (20, 460), font, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
         cv2.imwrite(Options.output, img)
 
@@ -302,17 +302,22 @@ class IndiClient(PyIndi.BaseClient):
             elif mean <= low:
                 # exposure too dark
                 if self.current_exposure >= EXPOSURE_THRESHOLD and self.current_gain < MAXGAIN and not last_gain_dec:
+                    # increase gain
                     self.current_gain += STEPGAIN
                     if self.current_gain > MAXGAIN: self.current_gain = MAXGAIN
                     last_gain_inc = True
                 else:
-                    self.current_exposure *= 1.4 if last_exp_dec else 2
+                    # increase exposure time
+                    if self.current_exposure >= MAXEXP:
+                        self.current_exposure = MAXEXP # just to be sure
+                        ic("alreay at MAXEXP")
+                        break;
+                    new_exp = self.current_exposure * (1.4 if last_exp_dec else 2)
+                    if new_exp > MAXEXP:
+                        new_exp = MAXEXP
+                    self.current_exposure = new_exp
                     last_gain_inc = False
                     last_exp_inc  = True
-                    if self.current_exposure > MAXEXP:
-                        self.current_exposure = MAXEXP
-                        ic("set to MAXEXP")
-                        break;
                 ic("too dark, new exposure:")
                 ic(self.current_exposure, self.current_gain)
             else:
