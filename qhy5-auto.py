@@ -256,7 +256,9 @@ class IndiClient(PyIndi.BaseClient):
         # add date
         font = cv2.FONT_HERSHEY_SIMPLEX
         # FIXME: position (360, 400) is very camera / binning specific!
+        txt_exp = f"{self.current_exposure:.2g}s (G{self.current_gain:d})"
         cv2.putText(img, time.ctime(), (360,460), font, .6, (255), 1, cv2.LINE_AA)
+        cv2.putText(img, txt_exp, (20, 460), font, 0.6, (255, 255, 255), 1, cv2.LINE_AA)
         cv2.imwrite(Options.output, img)
 
 
