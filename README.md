@@ -89,7 +89,7 @@ Version 0.1 / 2024-05-14 / Martin Junius
 Capture image with auto-exposure
 
 ```
-usage: qhy5-auto [-h] [-v] [-d] [-c CAMERA] [-g GAIN] [-o OFFSET] [-b BINNING] [-e EXPOSURE] [-l LOOP] [-O OUTPUT]
+usage: qhy5-auto [-h] [-v] [-d] [-M] [-c CAMERA] [-g GAIN] [-o OFFSET] [-b BINNING] [-e EXPOSURE] [-l LOOP] [-O OUTPUT]
 
 INDI client, capture frames from QHY5L with auto-exposure
 
@@ -97,6 +97,7 @@ options:
   -h, --help            show this help message and exit
   -v, --verbose         verbose messages
   -d, --debug           more debug messages
+  -M, --new-message     verbose log new INDI messages
   -c CAMERA, --camera CAMERA
                         camera name (default QHY CCD QHY5LII-M-6077d)
   -g GAIN, --gain GAIN  initial camera gain (default: 1)
@@ -110,8 +111,5 @@ options:
   -O OUTPUT, --output OUTPUT
                         output JPG file ./blob.jpg)
 
-Version 0.4 / 2024-05-24 / Martin Junius
+Version 0.5 / 2024-05-26 / Martin Junius
 ```
-
-(writes image to hardcoded blob.jpg)
-

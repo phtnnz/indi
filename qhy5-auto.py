@@ -23,6 +23,8 @@
 #       Added loop option
 # Version 0.4 / 2024-05-24
 #       Added output option, ready for web server usage
+# Version 0.5 / 2024-05-26
+#       Some improvements
 
 # Standard library
 import sys
@@ -43,7 +45,7 @@ ic.disable()
 from verbose import verbose, warning, error
 
 
-VERSION = "0.4 / 2024-05-24"
+VERSION = "0.5 / 2024-05-26"
 AUTHOR  = "Martin Junius"
 NAME    = "qhy5-auto"
 DESC    = "INDI client, capture frames from QHY5L with auto-exposure"
