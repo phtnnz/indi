@@ -286,17 +286,22 @@ class IndiClient(PyIndi.BaseClient):
             if mean >= high:
                 # exposure too bright
                 if self.current_exposure <= EXPOSURE_THRESHOLD and self.current_gain > MINGAIN and not last_gain_inc:
+                    # decrease gain
                     self.current_gain -= STEPGAIN
                     if self.current_gain < MINGAIN: self.current_gain = MINGAIN
                     last_gain_dec = True
                 else:
-                    self.current_exposure /= 1.4 if last_exp_inc else 2
+                    # decrease exposure time
+                    if self.current_exposure <= MINEXP:
+                        self.current_exposure = MINEXP # just to be sure
+                        ic("already at MINEXP")
+                        break;
+                    new_exp = self.current_exposure / (1.4 if last_exp_inc else 2)
+                    if new_exp < MINEXP:
+                        new_exp = MINEXP
+                    self.current_exposure = new_exp
                     last_exp_dec = True
                     last_gain_dec = False
-                    if self.current_exposure < MINEXP:
-                        self.current_exposure = MINEXP
-                        ic("set to MINEXP")
-                        break;
                 ic("too bright, new exposure:")
                 ic(self.current_exposure, self.current_gain)
             elif mean <= low:
@@ -325,7 +330,7 @@ class IndiClient(PyIndi.BaseClient):
                 ic("ok, saving image")
                 break
 
-        verbose(f"auto-exposure {last_exp:.3f}s gain={self.current_gain} mean={mean:.0f}")
+        verbose(f"auto-exposure {last_exp:.3g}s gain={self.current_gain} mean={mean:.0f}")
         self.CCDwriteImg(img)
 
 
