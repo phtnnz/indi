@@ -1,0 +1,6 @@
+#!/bin/sh
+
+DEST=/home/qhy5lii/indi
+
+cp qhy5-auto.py verbose.py run-client run-server $DEST
+ls -l $DEST
