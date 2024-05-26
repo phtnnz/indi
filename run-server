@@ -1,4 +1,7 @@
 #!/bin/sh
 
 #indiserver -v indi_qhy_ccd indi_simulator_telescope indi_simulator_ccd
-indiserver -v indi_qhy_ccd 
+
+# indiserver log messages go to stderr
+#V=-v
+indiserver -l . $V indi_qhy_ccd 2> indiserver.log
