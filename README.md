@@ -32,14 +32,14 @@ On Linux Ubuntu (Server) 22.04 LTS
 The following system-wide packages must be installed, including support for QHY cameras
 
 ```
-# apt-add-repository ppa:mutlaqja/ppa
-# apt-get update
-# apt-get install libindi1 indi-bin
-# apt-get install indi-qhy
-# apt-get install python3-indi-client
-# apt-get install python3-icecream
-# apt-get install python3-opencv
-# apt-get install python3-astropy
+> sudo apt-add-repository ppa:mutlaqja/ppa
+> sudo apt-get update
+> sudo apt-get install libindi1 indi-bin
+> sudo apt-get install indi-qhy
+> sudo apt-get install python3-indi-client
+> sudo apt-get install python3-icecream
+> sudo apt-get install python3-opencv
+> sudo apt-get install python3-astropy
 ```
 
 QHY USB device found, can be used with indiserver
@@ -48,8 +48,10 @@ QHY USB device found, can be used with indiserver
 [...]
 Bus 008 Device 010: ID 1618:0921 QHY-CCD   QHY5-II
 [...]
+
 > qhy_ccd_test
 [...]
+
 > indiserver -v indi_qhy_ccd
 [...]
 ```
@@ -112,4 +114,41 @@ options:
                         output JPG file ./blob.jpg)
 
 Version 0.5 / 2024-05-26 / Martin Junius
+```
+
+### Setup as a systemd service
+
+For Ubuntu Server 22.04 LTS, YMMV, install the qhy5lii-webcam.service file and start the service.
+
+```
+> sudo cp qhy5lii-webcam.service /lib/systemd/system
+> sudo ln -s /lib/systemd/system/qhy5lii-webcam.service /etc/systemd/system/multi-user.target.wants
+
+> sudo systemctl daemon-reload
+> sudo systemctl start qhy5lii-webcam
+```
+
+You can check the status of the qhy5lii-webcam service with systemctl status, 
+output should look below.
+
+```
+> sudo systemctl status qhy5lii-webcam
+● qhy5lii-webcam.service - QHY5LII Webcam (User qhy5lii)
+     Loaded: loaded (/lib/systemd/system/qhy5lii-webcam.service; enabled; vendor preset: enabled)
+     Active: active (running) since Thu 2024-07-18 13:51:40 CAT; 4 days ago
+   Main PID: 6854 (run)
+      Tasks: 16 (limit: 4279)
+     Memory: 86.4M
+        CPU: 2h 16min 52.145s
+     CGroup: /system.slice/qhy5lii-webcam.service
+             ├─6854 /bin/sh /home/qhy5lii/indi/run
+             ├─6856 /bin/sh ./run-server
+             ├─6857 /bin/sh ./run-client
+             ├─6858 python3 ./qhy5-auto.py -l 10 -O /var/www/html/0c55167f/camera.jpg
+             ├─6859 indiserver -l . indi_qhy_ccd
+             └─6860 indi_qhy_ccd
+
+... systemd[1]: Started QHY5LII Webcam (User qh5lii).
+... run[6854]: Starting Webcam - INDI server
+... run[6854]: Starting Webcam - INDI qhy-auto client
 ```
