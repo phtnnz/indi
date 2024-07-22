@@ -1,0 +1,12 @@
+[Unit]
+Description=QHY5LII Webcam (User qh5lii)
+After=network-online.target
+
+[Service]
+Type=simple
+User=qhy5lii
+WorkingDirectory=/home/qhy5lii/indi
+ExecStart=/home/qhy5lii/indi/run
+
+[Install]
+WantedBy=multi-user.target
