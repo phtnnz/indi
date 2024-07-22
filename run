@@ -1,0 +1,13 @@
+#!/bin/sh
+
+INDI=/home/qhy5lii/indi
+
+cd $INDI
+rm -f 20??-??-??.islog
+
+echo "Starting Webcam - INDI server"
+./run-server &
+echo "Starting Webcam - INDI qhy-auto client"
+./run-client
+
+exit 0
