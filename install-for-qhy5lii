@@ -2,5 +2,5 @@
 
 DEST=/home/qhy5lii/indi
 
-cp qhy5-auto.py verbose.py run-client run-server $DEST
+cp qhy5-auto.py verbose.py run-client run-server run $DEST
 ls -l $DEST
