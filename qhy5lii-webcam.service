@@ -1,5 +1,5 @@
 [Unit]
-Description=QHY5LII Webcam (User qh5lii)
+Description=QHY5LII Webcam (User qhy5lii)
 After=network-online.target
 
 [Service]
