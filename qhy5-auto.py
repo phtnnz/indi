@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2024 Martin Junius
+# Copyright 2024-2025 Martin Junius
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@
 #       Added output option, ready for web server usage
 # Version 0.5 / 2024-05-26
 #       Some improvements
+# Version 0.6 / 2025-06-11
+#       Use medianBlur() to remove hot pixels
 
 # Standard library
 import sys
@@ -45,7 +47,7 @@ ic.disable()
 from verbose import verbose, warning, error
 
 
-VERSION = "0.5 / 2024-05-26"
+VERSION = "0.6 / 2025-06-11"
 AUTHOR  = "Martin Junius"
 NAME    = "qhy5-auto"
 DESC    = "INDI client, capture frames from QHY5L with auto-exposure"
@@ -247,6 +249,9 @@ class IndiClient(PyIndi.BaseClient):
 
 
     def CCDwriteImg(self, img):
+        # Remove hot pixel
+        img = cv2.medianBlur(img, 3)
+
         # Normalize to 0 .. 255
         img = cv2.normalize(img, None, 0, 255, cv2.NORM_MINMAX, dtype=cv2.CV_8U)
 
