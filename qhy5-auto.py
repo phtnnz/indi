@@ -249,7 +249,7 @@ class IndiClient(PyIndi.BaseClient):
 
 
     def CCDwriteImg(self, img):
-        # Remove hot pixel
+        # Remove hot pixels
         img = cv2.medianBlur(img, 3)
 
         # Normalize to 0 .. 255
