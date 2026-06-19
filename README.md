@@ -1,6 +1,6 @@
 # INDI Python Utils
 
-Python scripts for image capture with INDI, currently tailored for a QHY 5L II mono
+Python scripts for image capture with INDI, currently tailored for QHY 5L II mono and ASI 120 MM
 
 Copyright 2024-2026 Martin Junius
 
@@ -29,7 +29,7 @@ https://github.com/jkoenig72/indiCapture
 
 On Linux Ubuntu (Server) 22.04 LTS
 
-The following system-wide packages must be installed, including support for QHY cameras
+The following system-wide packages must be installed, including support for QHY and ASI cameras
 
 ```
 sudo apt-add-repository ppa:mutlaqja/ppa
@@ -60,6 +60,11 @@ Bus 008 Device 010: ID 1618:0921 QHY-CCD   QHY5-II
 ```
 
 ### ASI 120 MM
+
+#### Firmware !!! ###
+
+The ASI 120 MM camera will only work with Linux / INDI if the "compatibility" firmware is installed. Alas, the corresponding download is no longer available from ZWO. The updater ```FWupdate_V1.0.exe``` and firmware ```ASI120MM-compatible.iic``` are required. See [here](./ASI120-links.txt) for possible sources on the Web.
+
 ```
 > lsusb
 [...]
@@ -72,6 +77,18 @@ Bus 001 Device 006: ID 03c3:120a ZWOptical company   ASI120MM
 > indiserver -v indi_asi_ccd
 [...]
 ```
+
+If ```asi_camera_test``` throws errors (core dump), then the compatibilty firmware (see above) isn't installed.
+
+#### Debugging ####
+
+Extra debug output of the ZWO ASI SDK can be enabled by editing the File ```~/.ZWO/ASIconfig.xml``` and setting
+```
+<DebugPrint type="3">01</DebugPrint>
+```
+(```01``` debug, ```00``` no debug)
+
+Logfiles can be found under ```~/.ZWO/asicamerasdk/```.
 
 
 ## Capturing frames with INDI camera (aka ccd)
@@ -165,7 +182,7 @@ output should look below.
              ├─6859 indiserver -l . indi_qhy_ccd
              └─6860 indi_qhy_ccd
 
-... systemd[1]: Started QHY5LII Webcam (User qh5lii).
+... systemd[1]: Started QHY5LII Webcam (User qhy5lii).
 ... run[6854]: Starting Webcam - INDI server
 ... run[6854]: Starting Webcam - INDI qhy-auto client
 ```
