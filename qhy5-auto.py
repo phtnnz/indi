@@ -82,7 +82,7 @@ MAXEXP    = 8          # camera allows max 3600 s, but would be too long ;-)
 # Command line options
 class Options:
     new_message = False                     # -M --new-message
-    camera   = "QHY CCD QHY5LII-M-6077d"    # -c --camera
+    camera   = "QHY CCD QHY5LII-M"          # -c --camera
     gain     = MINGAIN                      # -g --gain         1 ... 29
     offset   = MINOFFSET                    # -o --offset       1 ... 512
     exposure = 0.5                          # -e --exposure
