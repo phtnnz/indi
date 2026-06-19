@@ -144,11 +144,9 @@ class IndiClient(PyIndi.BaseClient):
         # Connect camera
         while not (device_ccd := self.getDevice(ccd)):
             time.sleep(TIMEOUT)
-        ic(device_ccd)
         self.device_ccd = device_ccd
         while not (ccd_connect := device_ccd.getSwitch("CONNECTION")):
             time.sleep(TIMEOUT)
-        ic(ccd_connect)
         if not device_ccd.isConnected():
             ccd_connect.reset()
             ccd_connect[0].setState(PyIndi.ISS_ON)  # the "CONNECT" switch
