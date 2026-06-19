@@ -2,7 +2,7 @@
 
 Python scripts for image capture with INDI, currently tailored for a QHY 5L II mono
 
-Copyright 2024 Martin Junius
+Copyright 2024-2026 Martin Junius
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,16 +32,19 @@ On Linux Ubuntu (Server) 22.04 LTS
 The following system-wide packages must be installed, including support for QHY cameras
 
 ```
-> sudo apt-add-repository ppa:mutlaqja/ppa
-> sudo apt-get update
-> sudo apt-get install libindi1 indi-bin
-> sudo apt-get install indi-qhy
-> sudo apt-get install python3-indi-client
-> sudo apt-get install python3-icecream
-> sudo apt-get install python3-opencv
-> sudo apt-get install python3-astropy
+sudo apt-add-repository ppa:mutlaqja/ppa
+sudo apt-get update
+sudo apt-get install libindi1 indi-bin
+sudo apt-get install indi-qhy
+sudo apt-get install indi-asi
+sudo apt-get install python-is-python3
+sudo apt-get install python3-indi-client
+sudo apt-get install python3-icecream
+sudo apt-get install python3-opencv
+sudo apt-get install python3-astropy
 ```
 
+### QHY 5L II mono
 QHY USB device found, can be used with indiserver
 ```
 > lsusb
@@ -53,6 +56,20 @@ Bus 008 Device 010: ID 1618:0921 QHY-CCD   QHY5-II
 [...]
 
 > indiserver -v indi_qhy_ccd
+[...]
+```
+
+### ASI 120 MM
+```
+> lsusb
+[...]
+Bus 001 Device 006: ID 03c3:120a ZWOptical company   ASI120MM
+[...]
+
+> asi_camera_test
+[...]
+
+> indiserver -v indi_asi_ccd
 [...]
 ```
 
