@@ -79,6 +79,12 @@ Bus 001 Device 006: ID 03c3:120a ZWOptical company   ASI120MM
 ```
 
 If ```asi_camera_test``` throws errors (core dump), then the compatibilty firmware (see above) isn't installed.
+If successful, the test program will write the image file ```image_001.raw```, use
+```
+> convert -size 1280x960 -depth 8 gray:image_001.raw image_001.png
+```
+to convert the raw file to a viewable PNG (ImageMagick must be installed).
+
 
 #### Debugging ####
 
