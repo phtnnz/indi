@@ -97,6 +97,11 @@ Extra debug output of the ZWO ASI SDK can be enabled by editing the File ```~/.Z
 Logfiles can be found under ```~/.ZWO/asicamerasdk/```.
 
 
+#### INDI Config ####
+
+Camera specific configuration can be found here ```~/.indi/ZWO CCD ASI120MM_config.xml```
+
+
 ## Capturing frames with INDI camera (aka ccd)
 
 ### qhy5-capture
