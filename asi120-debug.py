@@ -146,9 +146,6 @@ class IndiClient(PyIndi.BaseClient):
 
         self.ccd_controls = device_ccd.getNumber("CCD_CONTROLS")
         self.ic_prop_number(self.ccd_controls)
-        self.ccd_gain = self.ccd_controls[0]
-        self.ccd_offset = self.ccd_controls[1]
-        self.ccd_bandwidth = self.ccd_controls[2]
 
         self.ccd_binning = device_ccd.getNumber("CCD_BINNING")
         self.ic_prop_number(self.ccd_binning)
@@ -220,13 +217,28 @@ class IndiClient(PyIndi.BaseClient):
 
 
 
-    def verboseCCDAttr(self):
-        # IndiClient._verbose_list("CCD exposure", self.ccd_exposure)
-        # IndiClient._verbose_list("CCD binning",  self.ccd_binning)
-        # IndiClient._verbose_list("CCD gain",     self.ccd_gain)
-        # IndiClient._verbose_list("CCD offset",   self.ccd_offset)
-        # IndiClient._verbose_list("CCD info",     self.ccd_info)
-        ...
+    @staticmethod
+    def verbose_number(prop):
+        value_string = ", ".join([ f"{w.getName()}={w.getValue():.2f}" for w in prop ])
+        verbose(f"{prop.getName()}: {value_string}")
+        
+
+
+    def verbose_ccd(self):
+        self.verbose_number(self.ccd_controls)
+        self.verbose_number(self.ccd_binning)
+        self.verbose_number(self.ccd_info)
+        self.verbose_number(self.ccd_exposure)
+
+
+    def set_ccd(self, gain, offset, bandwidth, binning, raw8=True):
+        self.ccd_controls[0].setValue(gain)
+        self.ccd_controls[1].setValue(offset)
+        self.ccd_controls[2].setValue(bandwidth)
+        self.sendNewProperty(self.ccd_controls)
+        self.ccd_binning[0].setValue(binning)
+        self.ccd_binning[1].setValue(binning)
+        self.sendNewProperty(self.ccd_binning)
 
 
 
@@ -279,7 +291,9 @@ def main():
     verbose(">>> Connect camera")
     indi.CCDconnect(Options.camera)
     verbose(">>> Attributes")
-    indi.verboseCCDAttr()
+    indi.verbose_ccd()
+    indi.set_ccd(11, 22, 33, 2)
+    indi.verbose_ccd()
 
     # Disconnect from the indiserver
     indi.disconnectServer()
