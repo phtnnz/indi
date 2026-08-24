@@ -6,4 +6,5 @@ __pycache__/
 tmp/
 *.islog
 *.log
-image_*
+image*
+pyindi-examples/
