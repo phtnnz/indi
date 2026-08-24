@@ -154,8 +154,8 @@ class IndiClient(PyIndi.BaseClient):
 
         self.ccd_exposure = self.getCCDAttr("CCD_EXPOSURE")
         self.ccd_binning  = self.getCCDAttr("CCD_BINNING")
-        # self.ccd_gain     = self.getCCDAttr("CCD_GAIN")
-        # self.ccd_offset   = self.getCCDAttr("CCD_OFFSET")
+        self.ccd_gain     = self.getCCDAttr("CCD_CONTROLS.Gain")
+        self.ccd_offset   = self.getCCDAttr("CCD_CONTROLS.Offset")
         self.ccd_info     = self.getCCDAttr("CCD_INFO")
 
         # inform the indi server that we want to receive the "CCD1" blob from this device
@@ -170,11 +170,11 @@ class IndiClient(PyIndi.BaseClient):
 
 
     def CCDcapture(self, gain, offset, bin, exp):
-        # # set gain and offset
-        # self.ccd_gain[0].setValue(gain)
-        # self.sendNewProperty(self.ccd_gain)
-        # self.ccd_offset[0].setValue(offset)
-        # self.sendNewProperty(self.ccd_offset)
+        # set gain and offset
+        self.ccd_gain[0].setValue(gain)
+        self.sendNewProperty(self.ccd_gain)
+        self.ccd_offset[0].setValue(offset)
+        self.sendNewProperty(self.ccd_offset)
         # set binning
         self.ccd_binning[0].setValue(bin)
         self.ccd_binning[1].setValue(bin)
@@ -235,8 +235,8 @@ class IndiClient(PyIndi.BaseClient):
     def verboseCCDAttr(self):
         IndiClient._verbose_list("CCD exposure", self.ccd_exposure)
         IndiClient._verbose_list("CCD binning",  self.ccd_binning)
-        # IndiClient._verbose_list("CCD gain",     self.ccd_gain)
-        # IndiClient._verbose_list("CCD offset",   self.ccd_offset)
+        IndiClient._verbose_list("CCD gain",     self.ccd_gain)
+        IndiClient._verbose_list("CCD offset",   self.ccd_offset)
         IndiClient._verbose_list("CCD info",     self.ccd_info)
 
 
