@@ -59,10 +59,10 @@ PORT    = 7624
 class Options:
     camera   = "ZWO CCD ASI120MM"           # -c --camera
     gain     = 0                            # -g --gain         0 ... 100
-    offset   = 0                            # -o --offset       0 ... 100
+    offset   = 0                            # -o --offset       0 ... 20
     exposure = 0.1                          # -e --exposure
     binning  = 2                            # -b --binning
-
+    bandwith = 40                           #                   40 ... 100
 
 
 # IndiClient class which inherits from the module PyIndi.BaseClient class
@@ -143,6 +143,9 @@ class IndiClient(PyIndi.BaseClient):
             ccd_connect.reset()
             ccd_connect[0].setState(PyIndi.ISS_ON)  # the "CONNECT" switch
             self.sendNewProperty(ccd_connect)
+
+        time.sleep(TIMEOUT)
+        self.setBLOBMode(PyIndi.B_ALSO, ccd, "CCD1")
 
         self.ccd_controls = device_ccd.getNumber("CCD_CONTROLS")
         self.ic_prop_number(self.ccd_controls)
@@ -240,6 +243,10 @@ class IndiClient(PyIndi.BaseClient):
         self.ccd_binning[1].setValue(binning)
         self.sendNewProperty(self.ccd_binning)
 
+    def set_exposure(self, exp):
+        self.ccd_exposure[0].setValue(exp)
+        self.sendNewProperty(self.ccd_exposure)
+
 
 
 def main():
@@ -292,8 +299,14 @@ def main():
     indi.CCDconnect(Options.camera)
     verbose(">>> Attributes")
     indi.verbose_ccd()
-    indi.set_ccd(11, 22, 33, 2)
+    indi.set_ccd(11, 10, 40, 2)
     indi.verbose_ccd()
+
+    indi.set_exposure(1.5)
+    for _ in range(0, 50):
+        indi.verbose_number(indi.ccd_exposure)
+        time.sleep(TIMEOUT)
+
 
     # Disconnect from the indiserver
     indi.disconnectServer()
